@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+<head>
+  <title>Memory</title>
+  <style type="text/css">
+    button{display: block; margin:1em;}
+  </style>
+</head>
+<body>
+  <button onclick="play(1)">train</button>
+  <button onclick="play(8,true)">enter</button>
+
+  <script src="bower_components/d3/d3.js"></script>
+  <script>
+    var data_str = sessionStorage.getItem('data');
+    if(!data_str){
+      data_str = d3.range(8).map(function(){return ~~(Math.random()*8)}).join(' ');
+      sessionStorage.setItem('data', data_str);
+    }
+
+    var data = data_str.split(' ').map(function(f){return parseInt(f, 10)})
+
+    var width = 500,
+        height = 500;
+
+    var svg = d3.select('body')
+        .append('svg')
+        .attr('width', width)
+        .attr('height', height);
+
+    var squares = svg.selectAll('circle')
+      .data(d3.range(9));
+
+    squares
+      .enter()
+      .append('circle')
+      .attr('r', width/6)
+      .attr('cx', function(d){return ((d%3)+.5)*width/3})
+      .attr('cy', function(d){return (Math.floor(d/3)+0.5)*width/3})
+      .style('fill', '#ddd');
+
+    // play up to n datum
+    function play(n, skipHint){
+
+      (skipHint ? userTurn : train)(0)
+
+      function train(step){
+        squares
+          .transition()
+          .style('fill', function(d){
+            return d == data[step] ? '#f08' : '#ddd';
+          })
+          .transition()
+          .style('fill', '#ddd')
+
+        if(step+1 < n) setTimeout(train, 600, step+1)
+        else setTimeout(userTurn, 600)
+      }
+
+      function userTurn(){
+        var attempt = [];
+
+        squares
+          .on('click', function(c){
+            squares
+            .transition()
+            .style('fill', function(d){
+              return d == c ? '#08f' : '#ddd';
+            })
+
+            attempt.push(c);
+
+            if(attempt.length >= n){
+
+              squares.on('click', null);
+
+              var errors = attempt.some(function(item, i){
+                return item != data[i]
+              })
+
+              squares
+              .transition()
+              .style('fill', errors ? 'red' : 'green')
+              .transition()
+              .delay(600)
+              .style('fill', '#ddd');
+
+              setTimeout(play, 1000, errors? n : n + 1);
+            }
+          })
+      }
+    }
+
+  </script>
+</body>
+</html>

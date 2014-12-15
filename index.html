@@ -15,7 +15,7 @@
   <script>
     var data_str = sessionStorage.getItem('data');
     if(!data_str){
-      data_str = d3.range(8).map(function(){return ~~(Math.random()*8)}).join(' ');
+      data_str = d3.range(10).map(function(){return ~~(Math.random()*8)}).join(' ');
       sessionStorage.setItem('data', data_str);
     }
 
